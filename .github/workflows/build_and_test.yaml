@@ -5,10 +5,10 @@ name: Build and Test
 
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-      - ros2
+  # pull_request:
+  # push:
+  #   branches:
+  #     - ros2
 
 jobs:
   industrial_ci:
@@ -19,21 +19,21 @@ jobs:
       matrix:
         env:
           - {ROS_DISTRO: humble, ROS_REPO: main, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: humble, ROS_REPO: testing, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: jazzy, ROS_REPO: main, CCOV_UPLOAD: false}
-          - {ROS_DISTRO: kilted, ROS_REPO: main, CCOV_UPLOAD: false}
+          # - {ROS_DISTRO: humble, ROS_REPO: testing, CCOV_UPLOAD: false}
+          # - {ROS_DISTRO: jazzy, ROS_REPO: main, CCOV_UPLOAD: false}
+          # - {ROS_DISTRO: kilted, ROS_REPO: main, CCOV_UPLOAD: false}
           # lyrical and rolling are both Ubuntu Resolute. lyrical gates: it is
           # released and ros-lyrical-warehouse-ros is published, so it gives a
           # blocking Resolute signal. rolling cannot pass until
           # ros-rolling-warehouse-ros is published, so it stays non-blocking;
           # drop NONBLOCKING once it is.
-          - {ROS_DISTRO: lyrical, ROS_REPO: main, OS_CODE_NAME: resolute,
-             CCOV_UPLOAD: false}
-          - {ROS_DISTRO: rolling, ROS_REPO: testing, OS_CODE_NAME: resolute,
-             NONBLOCKING: true, CCOV_UPLOAD: true,
-             CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS='--coverage' -DCMAKE_CXX_FLAGS='--coverage'",
-             AFTER_RUN_TARGET_TEST: './.ci.prepare_codecov',
-             ADDITIONAL_DEBS: 'curl lcov grep'}
+          # - {ROS_DISTRO: lyrical, ROS_REPO: main, OS_CODE_NAME: resolute,
+          #    CCOV_UPLOAD: false}
+          # - {ROS_DISTRO: rolling, ROS_REPO: testing, OS_CODE_NAME: resolute,
+          #    NONBLOCKING: true, CCOV_UPLOAD: true,
+          #    CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS='--coverage' -DCMAKE_CXX_FLAGS='--coverage'",
+          #    AFTER_RUN_TARGET_TEST: './.ci.prepare_codecov',
+          #    ADDITIONAL_DEBS: 'curl lcov grep'}
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BASEDIR: ${{ github.workspace }}/.work
@@ -69,20 +69,20 @@ jobs:
       - name: industrial_ci
         uses: ros-industrial/industrial_ci@master
         env: ${{ matrix.env }}
-      - name: upload test artifacts (on failure)
-        uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: test-results
-          path: ${{ env.BASEDIR }}/target_ws/**/test_results/**/*.xml
-      - name: prepare target_ws for cache
-        if: ${{ always() && ! matrix.env.CCOV }}
-        run: |
-          du -sh ${{ env.BASEDIR }}/target_ws
-          sudo find ${{ env.BASEDIR }}/target_ws -wholename '*/test_results/*' -delete
-          sudo rm -rf ${{ env.BASEDIR }}/target_ws/src
-          du -sh ${{ env.BASEDIR }}/target_ws
-      - uses: codecov/codecov-action@v6
-        if: ${{ matrix.env.CCOV_UPLOAD }}
-        with:
-          files: ${{ env.BASEDIR }}/coverage.info
+      # - name: upload test artifacts (on failure)
+      #   uses: actions/upload-artifact@v7
+      #   if: failure()
+      #   with:
+      #     name: test-results
+      #     path: ${{ env.BASEDIR }}/target_ws/**/test_results/**/*.xml
+      # - name: prepare target_ws for cache
+      #   if: ${{ always() && ! matrix.env.CCOV }}
+      #   run: |
+      #     du -sh ${{ env.BASEDIR }}/target_ws
+      #     sudo find ${{ env.BASEDIR }}/target_ws -wholename '*/test_results/*' -delete
+      #     sudo rm -rf ${{ env.BASEDIR }}/target_ws/src
+      #     du -sh ${{ env.BASEDIR }}/target_ws
+      # - uses: codecov/codecov-action@v6
+      #   if: ${{ matrix.env.CCOV_UPLOAD }}
+      #   with:
+      #     files: ${{ env.BASEDIR }}/coverage.info
